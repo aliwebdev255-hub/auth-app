@@ -1,0 +1,79 @@
+<div class="dashboard">
+
+  <div class="topbar">
+    <div>
+      <h1>Product Management</h1>
+      <p>Manage products, stock & pricing efficiently</p>
+    </div>
+
+    <button class="btn-add" (click)="addProduct()">
+      + Add Product
+    </button>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <span>Total Products</span>
+      <h2>{{ products.length }}</h2>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <dx-data-grid
+      #productGrid
+      [dataSource]="products"
+      keyExpr="productId"
+      [showBorders]="false"
+      [rowAlternationEnabled]="true"
+      [hoverStateEnabled]="true"
+      [columnAutoWidth]="true"
+      (onRowInserted)="insertProduct($event)"
+      (onRowUpdated)="updateProduct($event)"
+      (onRowRemoved)="deleteProduct($event.data.productId)"
+    >
+
+      <dxo-search-panel [visible]="true" placeholder="Search products..." />
+      <dxo-paging [pageSize]="10" />
+      <dxo-pager [showPageSizeSelector]="true" [allowedPageSizes]="[10,20,50]" />
+
+      <dxo-editing
+        mode="popup"
+        [allowAdding]="true"
+        [allowUpdating]="true"
+        [allowDeleting]="true"
+        [useIcons]="true">
+
+        <dxo-popup title="Product Management" [showTitle]="true" [width]="700" [height]="500" />
+        
+        <dxo-form>
+          <dxi-item dataField="name" caption="Product Name"></dxi-item>
+          <dxi-item dataField="price" editorType="dxNumberBox"></dxi-item>
+          <dxi-item dataField="stock" editorType="dxNumberBox"></dxi-item>
+          <dxi-item dataField="imageUrl" caption="Image URL"></dxi-item>
+          <dxi-item dataField="description" editorType="dxTextArea" [colSpan]="2"></dxi-item>
+          <!-- <dxi-item dataField="action" caption="Action"></dxi-item> -->
+        </dxo-form>
+      </dxo-editing>
+
+      <dxi-column dataField="imageUrl" caption="Image" [width]="90" [allowFiltering]="false" cellTemplate="imgTpl"></dxi-column>
+      <dxi-column dataField="name" caption="Product Name"></dxi-column>
+      <dxi-column dataField="price" caption="Price" format="currency" alignment="right" [width]="120"></dxi-column>
+      <dxi-column dataField="stock" caption="Stock" [width]="120" alignment="center" cellTemplate="stockTpl"></dxi-column>
+      <dxi-column dataField="description" caption="Description" [width]="200" alignment="left"></dxi-column>
+      <!-- <dxi-column dataField="action" caption="Action" [width]="120" alignment="center" cellTemplate="stockTpl"></dxi-column> -->
+
+      <!-- Templates -->
+      <div *dxTemplate="let d of 'imgTpl'">
+        <img class="img" [src]="d.value || 'assets/placeholder.png'" />
+      </div>
+
+      <div *dxTemplate="let d of 'stockTpl'">
+        <span class="stock" [class.low]="d.value < 10">
+          {{ d.value }}
+        </span>
+      </div>
+
+    </dx-data-grid>
+  </div>
+
+</div>

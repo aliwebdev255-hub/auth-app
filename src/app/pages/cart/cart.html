@@ -1,0 +1,41 @@
+<div class="container">
+
+  <h2 class="page-title">🛒 My Cart</h2>
+
+  <!-- Loader -->
+  <div *ngIf="isLoading" class="loader">
+    Loading cart items...
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!isLoading && carts.length === 0" class="empty">
+    No items in cart 
+  </div>
+
+  <!-- Data Grid -->
+  <dx-data-grid
+    *ngIf="!isLoading && carts.length > 0"
+    [dataSource]="carts"
+    [showBorders]="true"
+    [columnAutoWidth]="true"
+    [rowAlternationEnabled]="true"
+  >
+
+    <dxi-column dataField="cartId" caption="ID" width="80"></dxi-column>
+
+    <dxi-column dataField="productId" caption="Product"></dxi-column>
+
+    <dxi-column dataField="quantity" caption="Quantity"></dxi-column>
+
+    <!-- Action Column -->
+    <dxi-column type="buttons" width="120">
+      <dxi-button
+        text="Delete"
+        type="danger"
+        (onClick)="onDeleteClick($event)"
+      ></dxi-button>
+    </dxi-column>
+
+  </dx-data-grid>
+
+</div>
