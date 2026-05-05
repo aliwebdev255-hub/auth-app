@@ -2,84 +2,145 @@ import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../services/product.service';
 import { DxDataGridModule, DxDataGridComponent } from 'devextreme-angular';
-import { Product } from '../core/models/product';
+import { RouterModule } from '@angular/router';
+import { CartService } from '../services/cart.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, DxDataGridModule],
+  imports: [CommonModule, DxDataGridModule, RouterModule],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
 export class DashboardComponent implements OnInit {
 
-  @ViewChild('productGrid', { static: false }) grid!: DxDataGridComponent;
+  @ViewChild('productGrid') grid!: DxDataGridComponent;
 
-  products: Product[] = [];
-  isLoading = false;
+  products: any[] = [];
+
+  // TOAST
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'success';
 
   constructor(
     private api: ApiService,
+    private cartService: CartService,
     private cdr: ChangeDetectorRef
   ) {}
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.getProducts();
   }
 
-  getProducts(): void {
-    this.isLoading = true;
-
+  // LOAD
+  getProducts() {
     this.api.getProducts().subscribe({
       next: (res: any) => {
-        this.products = Array.isArray(res) ? res : (res.data || []);
-        this.isLoading = false;
+        this.products = Array.isArray(res) ? res : res.data;
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error("Fetch Error:", err);
-        this.isLoading = false;
-        this.cdr.detectChanges();
+      error: () => {
+        this.showToastMessage('Failed to load ❌', 'error');
       }
     });
   }
 
-  addProduct(): void {
-    if (this.grid) {
-      this.grid.instance.addRow();
-    }
+  // ADD BUTTON
+  addProduct() {
+    this.grid.instance.addRow();
   }
 
-  insertProduct(e: any): void {
+  // INSERT
+  insertProduct(e: any) {
+    const d = e.data;
+
     const payload = {
-      name: e.data.name,
-      price: e.data.price,
-      description: e.data.description,
-      stock: e.data.stock,
-      imageUrl: e.data.imageUrl
+      name: d.name ?? '',
+      price: Number(d.price) || 0,
+      stock: Number(d.stock) || 0,
+      description: d.description ?? '',
+      imageUrl: d.imageUrl ?? ''
     };
 
+    console.log('SENDING:', payload);
+
     this.api.addProduct(payload).subscribe({
-      next: () => this.getProducts(),
-      error: (err) => console.error("Insert failed:", err)
+      next: () => {
+        this.showToastMessage('Product added ✅', 'success');
+        this.getProducts();
+      },
+      error: (err) => {
+        console.error('ERROR:', err.error);
+        this.showToastMessage('Insert failed ❌', 'error');
+      }
     });
   }
 
-  updateProduct(e: any): void {
-    const updatedData = e.data;
+  // UPDATE
+  updateProduct(e: any) {
+    const d = e.data;
 
-    this.api.updateProduct(updatedData.productId, updatedData).subscribe({
-      next: () => this.getProducts(),
-      error: (err) => console.error("Update failed:", err)
+    const payload = {
+      name: d.name,
+      price: d.price,
+      stock: d.stock,
+      description: d.description,
+      imageUrl: d.imageUrl
+    };
+
+    this.api.updateProduct(d.productId, payload).subscribe({
+      next: () => {
+        this.showToastMessage('Updated ✅', 'success');
+        this.getProducts();
+      },
+      error: () => {
+        this.showToastMessage('Update failed ❌', 'error');
+      }
     });
   }
 
-  deleteProduct(id: number): void {
-    if (confirm("Are you sure you want to delete this product?")) {
-      this.api.deleteProduct(id).subscribe({
-        next: () => this.getProducts(),
-        error: (err) => console.error("Delete failed:", err)
-      });
-    }
+  // DELETE
+  deleteProduct(id: number) {
+    this.api.deleteProduct(id).subscribe({
+      next: () => {
+        this.showToastMessage('Deleted ✅', 'success');
+        this.getProducts();
+      },
+      error: () => {
+        this.showToastMessage('Delete failed ❌', 'error');
+      }
+    });
+  }
+
+  // ADD TO CART
+  openAddToCart(productId: number) {
+    const payload = {
+      productId,
+      quantity: 1
+    };
+
+    this.cartService.addCart(payload).subscribe({
+      next: () => {
+        this.showToastMessage(`Product ${productId} added ✅`, 'success');
+      },
+      error: () => {
+        this.showToastMessage('Failed ❌', 'error');
+      }
+    });
+  }
+
+  // TOAST
+  showToastMessage(msg: string, type: 'success' | 'error') {
+    this.toastMessage = msg;
+    this.toastType = type;
+    this.showToast = true;
+
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      this.showToast = false;
+      this.cdr.detectChanges();
+    }, 2500);
   }
 }

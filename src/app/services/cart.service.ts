@@ -11,7 +11,7 @@ export class CartService {
 
   constructor(private http: HttpClient) {}
 
-  // 🔐 AUTH HEADERS
+  
   private getAuthHeaders() {
     const token = localStorage.getItem("token");
 
@@ -22,18 +22,23 @@ export class CartService {
     };
   }
 
-  // ✅ GET CART (AUTH REQUIRED)
+  
   getCart(): Observable<any> {
     return this.http.get(this.baseUrl, this.getAuthHeaders());
   }
 
-  // ✅ ADD TO CART
+  
   addCart(data: any): Observable<any> {
     return this.http.post(this.baseUrl, data, this.getAuthHeaders());
   }
 
-  // ✅ DELETE CART ITEM
-  deleteCart(id: number): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/${id}`, this.getAuthHeaders());
-  }
+  // DELETE CART ITEM
+  deleteCart(productId: number): Observable<any> {
+  return this.http.delete(
+    `${this.baseUrl}/${productId}`,
+    this.getAuthHeaders()
+  );
+}
+
+  
 }

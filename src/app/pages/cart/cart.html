@@ -1,41 +1,65 @@
-<div class="container">
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h2 class="logo">Inventory</h2>
+    <nav>
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">Products</a>
+      <a routerLink="/cart" routerLinkActive="active" class="nav-item">Cart</a>
+    </nav>
+  </aside>
 
-  <h2 class="page-title">🛒 My Cart</h2>
+  <div class="content">
+    <!-- TOAST -->
+    <div class="toast-container">
+      <div *ngIf="showToast" class="toast" [ngClass]="toastType">
+        {{ toastMessage }}
+      </div>
+    </div>
 
-  <!-- Loader -->
-  <div *ngIf="isLoading" class="loader">
-    Loading cart items...
+    <!-- HEADER -->
+    <div class="topbar">
+      <div>
+        <h1>My Cart</h1>
+        <p style="color: #64748b; margin: 0;">Review your selected items</p>
+      </div>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div *ngIf="!isLoading && carts.length === 0" 
+         style="text-align: center; padding: 50px; background: white; border-radius: 12px; border: 1px dashed #cbd5e1;">
+      <span style="font-size: 32px;">🛒</span>
+      <h3 style="color: #1e293b;">Your cart is empty</h3>
+      <a routerLink="/dashboard" style="color: #4f46e5; font-weight: 600; text-decoration: none;">Go shop products →</a>
+    </div>
+
+    <!-- TABLE -->
+    <div *ngIf="carts.length > 0" class="table-card">
+      <dx-data-grid
+        [dataSource]="carts"
+        keyExpr="productId"
+        [rowAlternationEnabled]="true"
+        [columnAutoWidth]="true"
+      >
+        <dxo-search-panel [visible]="true"></dxo-search-panel>
+
+        <dxi-column caption="Product" [calculateCellValue]="getProductName"></dxi-column>
+        <dxi-column dataField="quantity" caption="Quantity" alignment="center"></dxi-column>
+
+        <dxi-column caption="Actions" cellTemplate="cartActionTpl" [width]="320"></dxi-column>
+        <div *dxTemplate="let d of 'cartActionTpl'">
+          <button class="action-btn add" (click)="openAddToCart(d.data.productId)">
+            Add More
+          </button>
+          
+          <button class="action-btn secondary" (click)="editCart(d.data)">
+            Edit
+          </button>
+
+          <button class="action-btn danger" (click)="deleteCartItem(d.data.productId)">
+            Remove
+          </button>
+        </div>
+      </dx-data-grid>
+    </div>
   </div>
-
-  <!-- Empty State -->
-  <div *ngIf="!isLoading && carts.length === 0" class="empty">
-    No items in cart 
-  </div>
-
-  <!-- Data Grid -->
-  <dx-data-grid
-    *ngIf="!isLoading && carts.length > 0"
-    [dataSource]="carts"
-    [showBorders]="true"
-    [columnAutoWidth]="true"
-    [rowAlternationEnabled]="true"
-  >
-
-    <dxi-column dataField="cartId" caption="ID" width="80"></dxi-column>
-
-    <dxi-column dataField="productId" caption="Product"></dxi-column>
-
-    <dxi-column dataField="quantity" caption="Quantity"></dxi-column>
-
-    <!-- Action Column -->
-    <dxi-column type="buttons" width="120">
-      <dxi-button
-        text="Delete"
-        type="danger"
-        (onClick)="onDeleteClick($event)"
-      ></dxi-button>
-    </dxi-column>
-
-  </dx-data-grid>
-
 </div>

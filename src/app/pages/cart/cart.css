@@ -1,98 +1,145 @@
-/* Container */
-.container {
-  max-width: 1000px;
-  margin: auto;
-  padding: 25px;
-  font-family: Arial, sans-serif;
+:host {
+  --bg-color: #f8fafc;
+  --sidebar-bg: #0f172a;
+  --card-bg: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
-/* Title */
-.page-title {
-  font-size: 26px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  color: #222;
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background: var(--bg-color);
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
-/* Loader */
-.loader {
-  text-align: center;
-  font-size: 16px;
+/* --- SIDEBAR & NAV (No Underlines) --- */
+.sidebar {
+  width: 240px;
+  background: var(--sidebar-bg);
+  color: #fff;
+  padding: 2rem 1.25rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.logo {
+  margin-bottom: 2.5rem;
+  font-size: 1.25rem;
+  font-weight: 800;
+  padding-left: 0.75rem;
+}
+
+.nav-item {
+  display: flex;
+  text-decoration: none !important; /* Removes underlines */
+  color: #94a3b8;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
   font-weight: 500;
-  color: #555;
-  margin-top: 20px;
+  transition: 0.2s;
 }
 
-/* Empty State */
-.empty {
-  text-align: center;
-  color: #888;
-  margin-top: 30px;
-  font-size: 16px;
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  text-decoration: none !important;
 }
 
-/* DataGrid Styling */
-::ng-deep .dx-datagrid {
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+.nav-item.active {
+  background: var(--accent);
+  color: #fff;
+  text-decoration: none !important;
 }
 
-/* Header */
-::ng-deep .dx-header-row {
-  background-color: #007bff;
-  color: white;
+/* --- MAIN CONTENT --- */
+.content {
+  flex: 1;
+  padding: 2.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Aligns title and button perfectly */
+  margin-bottom: 2rem;
+}
+
+.topbar h1 { margin: 0; font-size: 1.875rem; font-weight: 700; color: #0f172a; }
+
+/* --- UNIFIED BUTTON SYSTEM --- */
+.action-btn {
+  padding: 8px 18px;
+  border-radius: 8px;
   font-weight: 600;
-}
-
-/* Header text align */
-::ng-deep .dx-header-row .dx-datagrid-text-content {
-  text-align: center;
-}
-
-/* Rows */
-::ng-deep .dx-row {
-  transition: background 0.2s ease;
-}
-
-/* Hover Effect */
-::ng-deep .dx-row:hover {
-  background-color: #f1f7ff;
-}
-
-/* Alternate Row */
-::ng-deep .dx-row-alt {
-  background-color: #fafafa;
-}
-
-/* Cells */
-::ng-deep .dx-datagrid-rowsview .dx-row > td {
-  text-align: center;
-  vertical-align: middle;
-}
-
-/* Delete Button */
-::ng-deep .dx-button-danger {
-  background-color: #dc3545;
+  cursor: pointer;
   border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Style for Add to Cart / Primary Actions */
+.action-btn.primary, .action-btn.add {
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
   color: white;
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+/* Style for Edit */
+.action-btn.secondary {
+  background: #f1f5f9;
+  color: #475569;
+  margin-left: 8px;
+}
+
+/* Style for Remove/Delete */
+.action-btn.danger {
+  background: #fff1f2;
+  color: #e11d48;
+  margin-left: 8px;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+/* --- TABLE STYLING --- */
+.table-card {
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+/* --- TOAST --- */
+.toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+}
+
+.toast {
+  background: #10b981;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 10px;
   font-weight: 500;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-/* Delete Hover */
-::ng-deep .dx-button-danger:hover {
-  background-color: #b02a37;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .container {
-    padding: 15px;
-  }
-
-  .page-title {
-    font-size: 20px;
-  }
-}
+.toast.error { background: #ef4444; }

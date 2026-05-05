@@ -35,4 +35,5 @@ export class ApiService {
   updateProduct(id: number, data: any): Observable<any> {
     return this.http.put(`${this.baseUrl}/${id}`, data, this.getAuthHeaders());
   }
+  
 }

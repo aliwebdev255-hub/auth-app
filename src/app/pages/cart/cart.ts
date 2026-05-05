@@ -1,72 +1,154 @@
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
-import { DxDataGridModule, DxDataGridComponent } from 'devextreme-angular';
+import { DxDataGridModule } from 'devextreme-angular';
 import { CartService } from '../../services/cart.service';
+import { ApiService } from '../../services/product.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, DxDataGridModule],
+  imports: [CommonModule, DxDataGridModule, RouterLink],
   templateUrl: './cart.html',
   styleUrls: ['./cart.css'],
 })
 export class CartComponent implements OnInit {
 
-  @ViewChild(DxDataGridComponent) grid!: DxDataGridComponent;
-
   carts: any[] = [];
+  productsMap: { [key: number]: string } = {};
+
   isLoading = false;
 
+  // 🔥 TOAST
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'success';
+
   constructor(
-    private api: CartService,
+    private cartApi: CartService,
+    private productApi: ApiService,
     private cdr: ChangeDetectorRef
   ) {}
 
-  
   ngOnInit(): void {
-    this.loadCart();
+    this.loadData();
   }
 
-  // 🔹 LOAD CART
-  loadCart() {
+  // ==========================
+  // LOAD PRODUCTS + CART
+  // ==========================
+  loadData() {
     this.isLoading = true;
 
-    this.api.getCart().subscribe({
-      next: (res) => {
-        this.carts = res || [];
-        this.isLoading = false;
-        this.cdr.detectChanges();
+    this.productApi.getProducts().subscribe({
+      next: (products) => {
+
+        this.productsMap = {};
+        products.forEach((p: any) => {
+          this.productsMap[p.productId] = p.name;
+        });
+
+        this.cartApi.getCart().subscribe({
+          next: (cart) => {
+            this.carts = cart || [];
+            this.isLoading = false;
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error(err);
+            this.isLoading = false;
+          }
+        });
+
       },
-      error: (err) => {
-        console.error('Error loading cart:', err);
-        this.isLoading = false;
-      }
+      error: () => this.isLoading = false
     });
   }
 
-  // 🔹 HANDLE DELETE BUTTON CLICK (DevExtreme event)
-  onDeleteClick(e: any) {
-    const id = e.row?.data?.cartId;
+  // ==========================
+  // GET PRODUCT NAME
+  // ==========================
+  getProductName = (row: any) => {
+    return this.productsMap[row.productId] || 'Unknown';
+  };
 
-    if (!id) {
-      console.error('Cart ID not found');
-      return;
-    }
+  // ==========================
+  // ADD AGAIN
+  // ==========================
+  openAddToCart(productId: number) {
 
-    this.delete(id);
-  }
+    const payload = {
+      productId,
+      quantity: 1
+    };
 
-  // 🔹 DELETE ITEM
-  delete(id: number) {
-    if (!confirm('Delete this item?')) return;
-
-    this.api.deleteCart(id).subscribe({
+    this.cartApi.addCart(payload).subscribe({
       next: () => {
-        this.loadCart(); // refresh grid
+        this.showToastMessage('Added again ✅', 'success');
+        this.loadData();
       },
-      error: (err) => {
-        console.error('Delete failed:', err);
+      error: () => {
+        this.showToastMessage('Failed ❌', 'error');
       }
     });
+  }
+
+  // ==========================
+  // EDIT
+  // ==========================
+  editCart(data: any) {
+
+    const qty = prompt('Enter quantity:', data.quantity);
+
+    if (!qty || isNaN(+qty)) return;
+
+    const payload = {
+      productId: data.productId,
+      quantity: +qty
+    };
+
+    this.cartApi.addCart(payload).subscribe({
+      next: () => {
+        this.showToastMessage('Updated ✅', 'success');
+        this.loadData();
+      },
+      error: () => {
+        this.showToastMessage('Update failed ❌', 'error');
+      }
+    });
+  }
+
+  // ==========================
+  // DELETE
+  // ==========================
+  deleteCartItem(productId: number) {
+
+    if (!confirm('Delete item?')) return;
+
+    this.cartApi.deleteCart(productId).subscribe({
+      next: () => {
+        this.showToastMessage('Removed ✅', 'success');
+        this.loadData();
+      },
+      error: () => {
+        this.showToastMessage('Delete failed ❌', 'error');
+      }
+    });
+  }
+
+  // ==========================
+  // TOAST
+  // ==========================
+  showToastMessage(msg: string, type: 'success' | 'error') {
+    this.toastMessage = msg;
+    this.toastType = type;
+    this.showToast = true;
+
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      this.showToast = false;
+      this.cdr.detectChanges();
+    }, 2500);
   }
 }
